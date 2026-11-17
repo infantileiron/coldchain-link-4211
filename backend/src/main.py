@@ -14,6 +14,12 @@ async def lifespan(app):
    from scripts.seed_demo import seed
    seed()
   except Exception:logging.exception('seed failed')
+ try:
+  # 写账中断的结账单在启动时续跑确认；重试不会重复入账
+  from src.config.database import Session
+  from src.services import claims
+  with Session() as s:claims.resume_incomplete(s)
+ except Exception:logging.exception('resume incomplete settlements failed')
  yield
 app=FastAPI(title='冷链温控与损耗关联',lifespan=lifespan)
 app.add_middleware(RequestId);app.add_middleware(SecurityHeaders)

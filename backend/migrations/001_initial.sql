@@ -1,2 +1,13 @@
 -- Initial schema is created through SQLAlchemy Base.metadata.create_all.
 -- Natural keys: users.email, shipments.code, samples.code; unique constraints enforce idempotency.
+
+-- 月度索赔新增表（同样由 create_all 建立）：
+--   contracts(route,effective_month) 唯一；settlements(route,month) 唯一；
+--   settlement_lines 保存已结单逐样本/差额分摊；adjustments 记录更正差额；
+--   route_locks 为结账/更正的行锁锚点。
+-- 样本表新增 cargo_value_cents（分）与 settle_month（YYYY-MM），均可空。
+-- 已有部署升级：create_all 只会补建缺失表，不会给 samples 加列；
+-- 请先执行：
+--   ALTER TABLE samples ADD COLUMN cargo_value_cents INT NULL;
+--   ALTER TABLE samples ADD COLUMN settle_month VARCHAR(7) NULL;
+--   CREATE INDEX ix_samples_settle_month ON samples (settle_month);
